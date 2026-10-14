@@ -150,6 +150,11 @@ function Celio:join(code, cb)
   end })
 end
 
+-- the relay is reachable (Socket.IO handshake done)
+function Celio:connected()
+  return self.sio.connected == true
+end
+
 function Celio:leave()
   if self.inRoom then self.sio:emit("sessionLeft", {}) end
   self.inRoom = false

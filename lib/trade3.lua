@@ -43,9 +43,12 @@ local function noop() end
 
 -- opts: link (lib/gbalink.lua), Link (module), now, log,
 --   identity { version, trainerId, name (Gen 3 bytes), progressFlags, gender, language },
---   card (100 bytes)
+--   card (100 bytes),
+--   partyPerMenu: forget the party when a menu session ends, so every
+--   menu waits for a fresh setParty (the engine re-sends its party each time)
 function Trade3.new(opts)
   local self = setmetatable({
+    partyPerMenu = opts.partyPerMenu,
     link = opts.link,
     Link = opts.Link,
     now = opts.now or os.clock,
@@ -109,11 +112,13 @@ function Trade3:start() self:open("setup", self.Link.LINKTYPE.TRADE_SETUP) end
 
 function Trade3:setParty(party) self.party = party end
 
--- our player sat down in the Trade Center
+-- our player sat down in the Trade Center (kept until the room is open,
+-- when it comes early: after a both-cancel the room re-links first)
 function Trade3:seat()
+  self.wantSeat = true
   if self.seated then return end
-  self.seated = true
   if self.phase == "room" or self.phase == "setupRoom" then
+    self.seated = true
     self.link:keys(self.Link.KEY.READY)
     self:maybeStartTrade()
   end
@@ -148,6 +153,7 @@ end
 function Trade3:maybeStartTrade()
   if self.seated and self.partnerSeated and not self.closing then
     self.closing = true
+    self.wantSeat = false
     self.next = "menu"
     self.link:close(0)
   end
@@ -181,6 +187,7 @@ function Trade3:onLinkPlayer(block)
   elseif phase == "room" then
     self.seated, self.partnerSeated, self.closing = false, false, false
     self:emit({ type = "room" })
+    if self.wantSeat then self:seat() end
   end
 end
 
@@ -190,10 +197,14 @@ local STAGES = {
 }
 
 function Trade3:requestStage()
+  local party = self.party
+  if not party then
+    -- the owner's party is not in yet (after a trade the engine saves
+    -- first): the other GBA just waits on "Communication standby"
+    return self:after(0.1, function() self:requestStage() end)
+  end
   self.stage = (self.stage or 0) + 1
   local st = STAGES[self.stage]
-  local party = self.party
-  if not party then return self:fail("no party to send") end
   local bytes
   if st.mail then
     bytes = (party.mail or "") .. string.rep("\0", 220)
@@ -261,6 +272,7 @@ function Trade3:onClosed(ev)
   local nextPhase = self.next
   self.next = nil
   self.menuOpen = false
+  if self.phase == "menu" and self.partyPerMenu then self.party = nil end
   if self.phase == "anim" then
     self:emit({ type = "animDone" })
     nextPhase = "menu"
@@ -301,6 +313,7 @@ function Trade3:update(dt)
         self.phase = "setupRoom"
         self.seated, self.partnerSeated = false, false
         self:emit({ type = "room" })
+        if self.wantSeat then self:seat() end
       end
     elseif kind == "keys" then
       local K = self.Link.KEY

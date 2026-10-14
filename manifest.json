@@ -1,0 +1,25 @@
+{
+  "id": "gblink_celio",
+  "name": "GB-Link Celio Trades",
+  "version": "0.1.0",
+  "api": 2,
+  "entry": "main.lua",
+  "profile": "content",
+  "category": "TOOL",
+  "game_version": ">=0.0.0-0 <2.0.0",
+  "games": [
+    "firered",
+    "leafgreen"
+  ],
+  "priority": 100,
+  "permissions": [
+    "network",
+    "engine_internals"
+  ],
+  "affects_link": false,
+  "dependencies": [],
+  "optional_dependencies": [],
+  "conflicts": [],
+  "description": "Trade online from FireRed and LeafGreen with a real GBA on a Celio adapter, mGBA (Celio edition) or a Switch through celio.gblink.io: the Pokemon Center 2F Trade Center opens a four-digit Celio room, and the trade runs on the game's own Trade Center with its animation, trade evolutions and save.",
+  "github": "mleo2003/gen1recomp-celio"
+}
