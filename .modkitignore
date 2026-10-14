@@ -1,0 +1,12 @@
+# modkit matches exact paths only: every test file, none of them ship
+tests/bridge3_test.lua
+tests/celio_test.lua
+tests/codec3_test.lua
+tests/e2e/describe_party.lua
+tests/e2e/recomp3_driver.lua
+tests/e2e/virtual_cart.lua
+tests/fake_cart3.lua
+tests/fixtures/cart_party_a.bin
+tests/fixtures/cart_party_b.bin
+tests/fixtures/recomp_party.bin
+tests/load_test.lua

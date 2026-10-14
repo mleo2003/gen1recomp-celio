@@ -1,0 +1,31 @@
+-- Sharing metadata (25-community-and-ecosystem.md 3.2).  Read by tooling
+-- and the manager detail pane; never by the loader's merge.
+return {
+  summary = "Online trades from FireRed/LeafGreen with real GBAs and mGBA via celio.gblink.io rooms.",
+  author = "mleo2003",
+  contact = "https://github.com/mleo2003/gen1recomp-celio",
+  tags = { "multiplayer", "online", "trade", "link-cable", "tool" },
+  differences = {
+    changed = {
+      "the Pokemon Center 2F Cable Club's TRADE CENTER opens a Celio room instead of waiting for a cable",
+      "the engine's own Wireless Club notice about mods is skipped at the Cable Club desk",
+    },
+    added = {
+      "GBA LINK ONLINE (CELIO): four-digit rooms on the Celio server (MAKE A ROOM / JOIN A ROOM)",
+      "trades with a real FireRed/LeafGreen on the engine's own Trade Center, animation, trade evolutions and save",
+      "a trade commits here only after the other game has saved its side",
+      "mod option: SERVER (default the public Celio server)",
+    },
+    known = {
+      "wss:// only: needs the engine's TLS helper (official Windows and Android builds)",
+      "two copies of this game cannot meet over Celio (both would lead the link)",
+      "the other player's avatar stays by the Trade Center door",
+      "live-tested with FireRed in mGBA Celio edition; LeafGreen, real adapters and Ruby/Sapphire/Emerald partners untested",
+    },
+  },
+  credits = {
+    { who = "GB-Link / Celio", for_ = "celio.gblink.io, the relay server, adapter and mGBA script (protocol only; no code included)" },
+    { who = "pret/pokefirered", for_ = "the cable club, link and trade routines the link layer follows" },
+  },
+  compat = { engine = ">=1.0.0 <2.0.0", modApi = 2 },
+}
