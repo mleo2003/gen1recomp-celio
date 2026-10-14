@@ -142,7 +142,7 @@ function Door3.run(ctx, adapters, env)
     local mode = screen.mode
     y = lines(S("GBA LINK ONLINE (CELIO)"), x, y) + 4
     if mode == "menu" then
-      y = lines(S("Trade with a GBA, an emulator or a\nSwitch through celio.gblink.io."), x, y) + 4
+      y = lines(S("Trade with a GBA or an emulator\nthrough celio.gblink.io."), x, y) + 4
       local rows = { S("MAKE A ROOM"), S("JOIN A ROOM") }
       for i, label in ipairs(rows) do
         Font.draw((i == screen.cursor and "> " or "  ") .. label, x + 8, y)

@@ -3,6 +3,12 @@
 Format: [keep a changelog](https://keepachangelog.com/en/1.1.0/).
 Version headings match `manifest.json`'s `version`.
 
+## 0.1.1
+
+### Fixed
+
+- The door no longer says a Switch can link: that path is not tested.
+
 ## 0.1.0
 
 ### Added

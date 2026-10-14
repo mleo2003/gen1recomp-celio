@@ -1,5 +1,5 @@
 -- GB-Link Celio trades: FireRed and LeafGreen's Cable Club, online with a
--- real GBA (a Celio adapter), mGBA or a Switch through celio.gblink.io.
+-- real GBA (a Celio adapter) or mGBA through celio.gblink.io.
 --
 -- The Pokémon Center 2F attendant's TRADE CENTER gains a door: make a
 -- room (its four-digit number is what the friend types at celio.gblink.io)
