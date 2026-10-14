@@ -170,7 +170,16 @@ local function linkUpThroughDoor(W)
     Stack.top().mod.handleInput({ wasPressed = function(_, k) return k == key end })
   end
   press("a")   -- MAKE A ROOM
-  local finished = W.until_(function() return ctx.nativePoll == nil or ctx.nativePoll() end, 4000)
+  -- as the game runs it: while a screen is up only the screen updates
+  -- (src/ui/game3/hud.lua); with none, the script VM polls the special
+  local finished = W.until_(function()
+    local top = Stack.top()
+    if top and top.mod and top.mod.update then
+      top.mod.update(1 / 60)
+      return false
+    end
+    return ctx.nativePoll == nil or ctx.nativePoll()
+  end, 4000)
   check(finished, "the linkup finishes")
   check(not Stack.has(Door3.ID), "the door screen is gone")
   check(W.Flags.getVar(W.store, ctx, W.Link.VAR_RESULT) == W.Link.LINKUP.SUCCESS, "TryTradeLinkup: SUCCESS")

@@ -48,7 +48,9 @@ function Door3.run(ctx, adapters, env)
   screen.digits = {}
   for i = 1, CODE_LENGTH do screen.digits[i] = tonumber(seed:sub(i, i)) or 0 end
 
-  local M = {}
+  -- the screen's state is on the module for drivers and tests
+  local M = { screen = screen }
+  function M.visit() return visit end
   local function close()
     if open then
       open = false
@@ -115,7 +117,13 @@ function Door3.run(ctx, adapters, env)
     end
   end
 
-  function M.update() end
+  -- while a screen is up the field (and the script VM with it) stands
+  -- still, so the screen ticks the special's poll itself, as the engine's
+  -- cable lobby does
+  local poll
+  function M.update()
+    if poll and ctx.nativePoll == poll then poll() end
+  end
 
   local function lines(text, x, y)
     for line in (tostring(text) .. "\n"):gmatch("([^\n]*)\n") do
@@ -125,50 +133,47 @@ function Door3.run(ctx, adapters, env)
     return y
   end
 
+  -- above the attendant's "Please wait… B Button: Cancel" box, which
+  -- stays on screen underneath and already says how to leave
   function M.draw()
     if not open then return end
-    Window.stdFrame(Window.template(1, 1, 28, 18))
-    local x, y = 16, 14
+    Window.stdFrame(Window.template(1, 1, 28, 12))
+    local x, y = 16, 12
     local mode = screen.mode
     y = lines(S("GBA LINK ONLINE (CELIO)"), x, y) + 4
     if mode == "menu" then
-      y = lines(S("Trade with a GBA, an emulator or a\nSwitch through celio.gblink.io."), x, y) + 6
+      y = lines(S("Trade with a GBA, an emulator or a\nSwitch through celio.gblink.io."), x, y) + 4
       local rows = { S("MAKE A ROOM"), S("JOIN A ROOM") }
       for i, label in ipairs(rows) do
         Font.draw((i == screen.cursor and "> " or "  ") .. label, x + 8, y)
-        y = y + 16
+        y = y + 15
       end
-      lines(S("B: CANCEL"), x, 136)
     elseif mode == "code" then
-      y = lines(S("Enter the room number your\nfriend sees on celio.gblink.io."), x, y) + 10
+      y = lines(S("Type the room number your friend\nsees on celio.gblink.io."), x, y) + 2
       for i = 1, CODE_LENGTH do
-        local dx = x + 64 + (i - 1) * 24
+        local dx = x + 72 + (i - 1) * 20
         Font.draw(tostring(screen.digits[i]), dx, y)
-        if i == screen.pos then Font.draw("^", dx, y + 12) end
+        if i == screen.pos then Font.draw("^", dx, y + 10) end
       end
-      lines(S("UP/DOWN: number  A: JOIN\nB: BACK"), x, 121)
+      lines(S("UP/DOWN: number   A: JOIN"), x, y + 22)
     elseif mode == "wait" then
       local st = visit and visit.state or "connecting"
       if st == "connecting" or st == "joining" then
         lines(S("Connecting to the Celio server..."), x, y)
       elseif st == "room" then
-        y = lines(S("ROOM %s", visit.code or "----"), x, y) + 4
-        lines(S("Your friend opens celio.gblink.io,\nchooses JOIN SESSION and types\n%s, then connects their GBA.",
-                visit.code or "----"), x, y)
+        lines(S("ROOM %s: your friend opens\ncelio.gblink.io, chooses JOIN and\ntypes %s, then connects.",
+                visit.code or "----", visit.code or "----"), x, y)
       else
-        y = lines(S("Your friend is in the room."), x, y) + 4
-        lines(S("On their game: talk to the Cable\nClub attendant, choose TRADE\nCENTER and save."), x, y)
+        lines(S("Your friend is in the room. On\ntheir game: the Cable Club,\nTRADE CENTER, then save."), x, y)
       end
-      lines(S("B: CANCEL"), x, 136)
     elseif mode == "error" then
-      lines(reasonText(screen.error), x, y)
-      lines(S("A: OK"), x, 136)
+      y = lines(reasonText(screen.error), x, y)
+      lines(S("A: OK"), x, math.max(y + 2, 79))
     end
   end
 
   env.Natives.yieldHost(ctx, adapters, function() end)
   Link.setResult(ctx, Link.LINKUP.ONGOING)
-  local poll
   poll = function()
     if handedOff then return false end
     if done then return true end
